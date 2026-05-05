@@ -4,7 +4,7 @@ from datetime import datetime
 import os
 import matplotlib.pyplot as plt
 
-st.set_page_config(page_title="ExpenseWEB")
+st.set_page_config(page_title="Orga.Inv")
 
 st.markdown(
     """
@@ -22,34 +22,35 @@ st.markdown(
 
 File = "expenses.csv"
 
-st.markdown("<h1 style='color:#4B872D;'>Expense Tracker</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='color:#4B872D;'>Orga. Inv</h1>", unsafe_allow_html=True)
 
 if os.path.exists(File):
     df = pd.read_csv(File)
 else:
-    df = pd.DataFrame(columns=["Item[Name]", "How many", "Amount", "Purpose", "Effective Date", "Date & Time Upload" , "Personnel"])
+    df = pd.DataFrame(columns=["Expense", "How many", "Amount", "Purpose", "Effective Date", "Date & Time Upload" , "Personnel"])
 
 df["Amount"] = pd.to_numeric(df["Amount"], errors="coerce")
 
-st.header("Expenses")
+st.header("Inventory")
 
 col1, col2, col3= st.columns(3)
 
 with col1:
-    name = st.text_input("Expense name")
+    name = st.text_input("Expense")
     amount = st.number_input("Amount [Input Total Amount]", min_value=0.0)
 with col2:
-    how_many = st.text_input("How Many")
-    purpose = st.text_input("Purpose [For what?]")
+    how_many = st.number_input("How Many", min_value=0.0)
+    purpose = st.text_input("Purpose")
 
 with col3:
-    date = st.text_input("Effective Date [mm/dd/yyyy]")
+    date = st.date_input("Effective Date")
+    formatted_date = date.strftime("%B %d, %Y")
     person = st.text_input("Personnel [Name + POSITION]")
 
 if st.button("Confirm"):
     if name and amount > 0:
         new_row = pd.DataFrame(
-            [[name, how_many, amount, purpose,date, datetime.now(), person]],
+            [[name, how_many, amount, purpose,formatted_date, datetime.now().strftime("%B %d, %Y %I:%M %p"), person]],
             columns=df.columns
         )
 
@@ -69,7 +70,7 @@ if not df.empty:
     selected_index = st.selectbox(
         "Expense Deleter",
         df_display["index"],
-        format_func=lambda x: f"{df.loc[x, 'Item[Name]']} - {df.loc[x, 'Amount']}"
+        format_func=lambda x: f"{df.loc[x, 'Expense']} - {df.loc[x, 'Amount']}"
     )
 
     if st.button("Delete expenses"):
@@ -91,7 +92,7 @@ if not df.empty:
 
     st.subheader("Expenses in PIE")
 
-    item_data = df.groupby("Item[Name]")["Amount"].sum()
+    item_data = df.groupby("Expense")["Amount"].sum()
 
     fig1, ax1 = plt.subplots(figsize=(6, 6))
     fig1.patch.set_facecolor("none")
